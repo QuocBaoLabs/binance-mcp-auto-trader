@@ -14,6 +14,16 @@ Binance MCP Auto Trader is a local-first TypeScript trading workstation for Bina
 
 Fallback: [raw MP4 file](https://raw.githubusercontent.com/QuocBaoLabs/binance-mcp-auto-trader/main/assets/demo.mp4)
 
+## Screenshots
+
+| Market Scanner | Strategy Settings |
+| --- | --- |
+| ![Market scanner dashboard](assets/screenshots/demo-overview.jpg) | ![Strategy settings and radar](assets/screenshots/demo-strategy-settings.jpg) |
+
+| Radar View | Signal Table |
+| --- | --- |
+| ![Radar view](assets/screenshots/demo-radar.jpg) | ![Signal table](assets/screenshots/demo-signal-table.jpg) |
+
 ## What It Does
 
 - Runs a local backend that talks to Binance USD-M Futures through the official REST and WebSocket APIs.
