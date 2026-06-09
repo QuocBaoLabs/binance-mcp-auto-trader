@@ -4,9 +4,11 @@
 
 # Binance MCP Auto Trader
 
-Binance MCP Auto Trader is a local-first TypeScript trading workstation for Binance USD-M Futures. It combines a Node.js backend, a Model Context Protocol (MCP) server, a React dashboard, risk controls, SQLite persistence, and rule-based strategy engines for market scanning, signal review, dry-run execution, and tightly controlled live trading.
+Binance MCP Auto Trader is a local-first crypto futures trading workstation for Binance USD-M Futures. It gives traders a single place to scan markets, review rule-based setups, inspect risk, run dry-run execution, and optionally automate protected entries with stop loss and take profit controls.
 
-> This project is educational software, not financial advice. Trading crypto futures is high risk. Start with testnet and dry-run mode, and never use API keys with withdrawal permissions.
+The project is built for traders who want more than a simple alert script: it combines a React dashboard, a TypeScript backend, SQLite trade state, Binance REST/WebSocket integrations, and an MCP server so AI clients can safely inspect market context and request guarded trading actions.
+
+> This is educational software, not financial advice. Crypto futures are high risk. Start with testnet and dry-run mode, and never use API keys with withdrawal permissions.
 
 ## Demo
 
@@ -24,30 +26,195 @@ Fallback: [raw MP4 file](https://raw.githubusercontent.com/QuocBaoLabs/binance-m
 | --- | --- |
 | ![Radar view](assets/screenshots/demo-radar.jpg) | ![Signal table](assets/screenshots/demo-signal-table.jpg) |
 
-## What It Does
+## Why Use This Bot?
 
-- Runs a local backend that talks to Binance USD-M Futures through the official REST and WebSocket APIs.
-- Exposes MCP tools so compatible AI clients can read market data, inspect account state, and request guarded order actions.
-- Provides a Vite + React dashboard for health checks, market signals, positions, settings, order history, audit logs, emergency stop, and AI training workflows.
-- Stores runtime state in SQLite under `data/`, which is intentionally ignored by git.
-- Generates strategy signals from rule, SFP, candlestick, Wyckoff, and ICT/SMC-style modules.
-- Blocks risky execution by default through read-only mode, dry-run mode, testnet mode, TP/SL validation, position limits, leverage limits, and daily-loss controls.
-- Can optionally send chart-backed signal notifications to Telegram when credentials are configured locally.
+Manual futures trading becomes difficult when you are watching dozens of symbols, checking structure, calculating stop distance, comparing reward-to-risk, and trying to avoid duplicate or emotional entries. This bot is designed to reduce that operational load.
 
-## Safety Defaults
+- It scans many symbols continuously instead of forcing you to watch charts one by one.
+- It converts strategy rules into visible, explainable signals with score, direction, entry, stop loss, take profit, and rejection reasons.
+- It keeps execution guarded: every protected trade must pass risk checks before reaching Binance.
+- It supports manual review, semi-automatic confirmation, and automated execution modes.
+- It records signals, orders, logs, and risk state locally so you can audit what happened later.
+- It exposes MCP tools so an AI assistant can help inspect market context without receiving raw exchange secrets.
 
-The application starts locked down:
+The goal is not to guarantee profitable trades. The goal is to make signal discovery, risk review, and execution discipline more systematic.
 
-```env
-READ_ONLY=true
-AUTO_TRADE_ENABLED=false
-DRY_RUN=true
-BINANCE_TESTNET=true
-ALLOW_MARKET_ORDER=false
-ENABLE_LIVE_TRADING=false
+## Core Benefits
+
+### 1. Faster Market Scanning
+
+The dashboard can monitor a large watchlist across selected timeframes, rank signals, and show which assets are active, waiting, rejected, or ready for review.
+
+### 2. Explainable Strategy Decisions
+
+Signals include readable summaries and rule-level detail: why a setup passed, why it failed, where the stop belongs, whether reward-to-risk is acceptable, and whether the entry is chasing too far from the setup candle.
+
+### 3. Safer Execution Workflow
+
+The bot starts locked down. Read-only mode, dry-run mode, Binance testnet mode, max order size, max open positions, leverage caps, daily loss limits, and required TP/SL checks are enabled before live trading is possible.
+
+### 4. Local-First Privacy
+
+Secrets stay in `.env` on your machine. Runtime data is stored locally in SQLite. The dashboard only sees masked credential status, not raw API keys or request signatures.
+
+### 5. AI-Friendly Through MCP
+
+The MCP server gives compatible AI clients structured tools for market data, balances, positions, open orders, and guarded trade requests. Order tools still go through the same risk manager as the dashboard.
+
+## Strategy Engines
+
+The bot includes multiple strategy families. You can run one or combine scanners depending on your trading style.
+
+### Swing Failure Pattern (SFP)
+
+The SFP engine looks for liquidity sweeps around recent swing highs/lows, then checks whether price rejects back into the range.
+
+It evaluates:
+
+- swing sweep direction and confirmation
+- wick rejection quality
+- sweep depth relative to ATR
+- entry distance from the setup candle
+- volume ratio versus recent candles
+- stop placement around the sweep wick
+- reward-to-risk quality
+- maximum stop distance by timeframe
+- liquidation buffer and stop safety
+- optional candlestick confluence
+
+The engine turns those checks into a score. Weak setups remain visible for learning/review, while setups with fatal risk issues are blocked from auto execution.
+
+### Candlestick Confluence
+
+The candlestick scanner can detect reversal and continuation patterns, then compare them with SFP direction. When candlestick direction agrees with SFP, the setup receives stronger confirmation. When it conflicts, the threshold becomes stricter.
+
+This is useful for filtering raw SFP events so the bot does not treat every liquidity sweep as a trade candidate.
+
+### Wyckoff Accumulation / Distribution
+
+The Wyckoff module looks for market phases around accumulation and distribution behavior. It uses pivots, RSI context, trend sensitivity, volume filters, breakout buffers, and retest tolerance to identify potential long/short setups.
+
+It is designed for traders who want to detect structure-based reversals and breakouts rather than purely indicator-based entries.
+
+### ICT / SMC Engine
+
+The ICT/SMC module scans multi-timeframe structure and liquidity behavior. It focuses on the sequence many discretionary SMC traders look for:
+
+- higher-timeframe and lower-timeframe swing structure
+- liquidity pools
+- liquidity sweep
+- market structure shift
+- displacement
+- fair value gap
+- OTE-style retracement zone
+- nearest liquidity or swing target
+- preferred reward-to-risk
+- middle-of-range avoidance
+
+The engine scores candidate trades and can reject them when the setup lacks confluence, the stop is too wide, reward-to-risk is poor, or the trade appears in an undesirable range location.
+
+### Rule / Indicator Engine
+
+The rule engine supports classic signal ingredients such as EMA, RSI, SuperTrend, Bollinger Bands, Parabolic SAR, volume change, funding rate, open interest, and long/short ratio.
+
+It can be used as a simpler baseline strategy or as extra context beside SFP, Wyckoff, and SMC signals.
+
+## Signal Lifecycle
+
+1. The backend pulls or streams market data from Binance.
+2. Enabled strategy engines scan the selected symbols and timeframes.
+3. Each candidate setup is scored and explained.
+4. The bot calculates entry, stop loss, take profit, leverage, margin mode, and risk shape.
+5. Risk manager checks decide whether the setup can be executed.
+6. Signals are stored in SQLite and shown in the dashboard.
+7. In manual mode, the trader reviews and confirms.
+8. In auto mode, eligible signals can place protected orders.
+9. The monitor tracks pending, executed, TP-hit, SL-hit, ignored, and rejected signals.
+
+## Execution Modes
+
+- `READ_ONLY=true`: inspect data only; no trading actions.
+- `DRY_RUN=true`: simulate execution without placing Binance orders.
+- `BINANCE_TESTNET=true`: use Binance Futures testnet endpoints.
+- `AUTO_TRADE_ENABLED=false`: require manual review.
+- `SFP_AUTO_EXECUTE=false`: keep SFP scanner from auto-filling slots.
+- `ENABLE_LIVE_TRADING=false`: hard backend-level live trading lock.
+
+This layered setup is intentional. Live trading should require multiple explicit changes, not one accidental toggle.
+
+## Risk Controls
+
+The risk manager can block trades when:
+
+- read-only mode is enabled
+- auto trading is disabled
+- the symbol is not allowed
+- API credentials are missing for non-dry-run execution
+- stop loss or take profit is missing
+- order notional exceeds `MAX_ORDER_USDT`
+- daily realized loss reaches `MAX_DAILY_LOSS_USDT`
+- open positions reach `MAX_OPEN_POSITIONS`
+- requested leverage exceeds `MAX_LEVERAGE`
+- market orders are disabled
+- reward-to-risk is below the configured threshold
+- stop distance is too small, too large, or unsafe for the timeframe
+- there is already an active position or pending duplicate setup
+
+The emergency stop path pauses strategy execution, turns off auto trading, and attempts to cancel open orders for allowed symbols.
+
+## Dashboard Features
+
+- health panel for server, Binance API, balance API, and WebSocket status
+- symbol watchlist and top market movers
+- live scanner status and signal radar
+- signal table with pending, ignored, rejected, executed, TP, and SL states
+- strategy settings for SFP, SMC, Wyckoff, indicators, leverage, and timeframes
+- protected order controls
+- position and available-balance panels
+- audit log and order history
+- emergency stop control
+- optional Telegram signal delivery with chart attachments
+- optional AI training workflow for local strategy notes
+
+## MCP Tools
+
+The MCP server runs over stdio and exposes structured tools:
+
+- `get_price`
+- `get_klines`
+- `get_funding_rate`
+- `get_open_interest`
+- `get_long_short_ratio`
+- `get_balance`
+- `get_position`
+- `get_open_orders`
+- `create_limit_order`
+- `create_stop_loss_order`
+- `create_take_profit_order`
+- `cancel_order`
+- `close_position`
+
+Trading tools are not shortcuts around safety. They are routed through the same protected execution and risk checks as the dashboard.
+
+## Architecture
+
+```text
+.
+|-- assets/                 # Logo, screenshots, and demo media
+|-- dashboard/              # React + Vite dashboard
+|-- docs/                   # Strategy notes
+|-- server/
+|   |-- src/binance/        # REST and WebSocket Binance clients
+|   |-- src/strategy/       # Rule, SFP, Wyckoff, and ICT/SMC strategy code
+|   |-- src/sfp/            # SFP scanner and signal monitor
+|   |-- src/risk/           # Risk manager, liquidation guard, position logic
+|   |-- src/orders/         # Protected order executor
+|   |-- src/mcp/            # MCP stdio server
+|   `-- src/db/             # SQLite persistence
+|-- .env.example            # Safe environment template
+|-- package.json
+`-- README.md
 ```
-
-The dashboard never receives raw Binance secrets from the backend. API keys are read from `.env` and masked in logs and status responses.
 
 ## Tech Stack
 
@@ -58,21 +225,6 @@ The dashboard never receives raw Binance secrets from the backend. API keys are 
 - SQLite via `better-sqlite3`
 - Binance USD-M Futures REST and WebSocket integrations
 - Native Node test runner with `tsx`
-
-## Project Structure
-
-```text
-.
-|-- assets/                 # Repository artwork and demo media
-|-- dashboard/              # React dashboard
-|-- docs/                   # Strategy notes
-|-- server/                 # Backend, MCP server, risk, strategy, Binance clients
-|-- package.json            # Scripts and dependencies
-|-- .env.example            # Safe environment template
-`-- README.md
-```
-
-Ignored runtime folders include `node_modules/`, `dist/`, `data/`, `bin/`, logs, local assistant files, and `.env`.
 
 ## Installation
 
@@ -115,16 +267,10 @@ Dashboard: http://127.0.0.1:5173
 Backend:   http://127.0.0.1:3001
 ```
 
-Run only the backend:
+Run only the MCP server:
 
 ```bash
-npm run dev:api
-```
-
-Run only the dashboard:
-
-```bash
-npm run dev:dashboard
+npm run dev:mcp
 ```
 
 Build production output:
@@ -139,15 +285,7 @@ Start the built backend:
 npm run start
 ```
 
-## MCP Server
-
-Run the MCP server over stdio:
-
-```bash
-npm run dev:mcp
-```
-
-Example MCP client configuration:
+## MCP Client Configuration
 
 ```json
 {
@@ -161,24 +299,6 @@ Example MCP client configuration:
 }
 ```
 
-Available MCP tools include:
-
-- `get_price`
-- `get_klines`
-- `get_funding_rate`
-- `get_open_interest`
-- `get_long_short_ratio`
-- `get_balance`
-- `get_position`
-- `get_open_orders`
-- `create_limit_order`
-- `create_stop_loss_order`
-- `create_take_profit_order`
-- `cancel_order`
-- `close_position`
-
-Order-related tools are guarded by the same risk manager used by the dashboard.
-
 ## Environment Variables
 
 Core credentials:
@@ -191,7 +311,7 @@ TELEGRAM_BOT_TOKEN=
 TELEGRAM_CHAT_ID=
 ```
 
-Important runtime settings:
+Safe defaults:
 
 ```env
 READ_ONLY=true
@@ -235,29 +355,11 @@ BINANCE_TESTNET=false
 ENABLE_LIVE_TRADING=true
 ```
 
-## Risk Controls
-
-The risk manager can block actions when:
-
-- Read-only mode is enabled.
-- Auto trading is disabled.
-- The symbol is not in `ALLOWED_SYMBOLS`.
-- Stop loss or take profit is missing.
-- Order notional exceeds `MAX_ORDER_USDT`.
-- Daily loss reaches `MAX_DAILY_LOSS_USDT`.
-- Open positions reach `MAX_OPEN_POSITIONS`.
-- Leverage exceeds `MAX_LEVERAGE`.
-- Market orders are disabled.
-- A duplicate position already exists.
-- Required API credentials are missing for non-dry-run execution.
-
-The emergency stop path pauses strategy execution, turns off auto trading, and attempts to cancel open orders for allowed symbols.
-
 ## Data, Logs, And Secrets
 
 The following are intentionally excluded from git:
 
-- `.env` and any other local env files
+- `.env` and local env variants
 - SQLite databases and WAL/SHM files
 - generated signal charts
 - server and dev logs
