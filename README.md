@@ -10,9 +10,9 @@ Binance MCP Auto Trader is a local-first TypeScript trading workstation for Bina
 
 ## Demo
 
-<video src="assets/demo.mp4" controls width="100%" title="Binance MCP Auto Trader dashboard demo"></video>
+[Open the live video viewer](https://quocbaolabs.github.io/binance-mcp-auto-trader/demo.html)
 
-[Watch the dashboard demo video](assets/demo.mp4)
+Fallback: [raw MP4 file](https://raw.githubusercontent.com/QuocBaoLabs/binance-mcp-auto-trader/main/assets/demo.mp4)
 
 ## What It Does
 
