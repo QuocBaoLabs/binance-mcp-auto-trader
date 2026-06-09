@@ -383,7 +383,9 @@ Run tests:
 ```bash
 npm test
 ```
+Built with 🖤 by QuocBaoLabs
 
+Stay in the shadows.
 ## Official Binance References
 
 - USD-M Futures general information: https://developers.binance.com/docs/derivatives/usds-margined-futures/general-info
