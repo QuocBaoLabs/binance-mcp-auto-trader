@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+coverage/
+
+# Runtime data and generated artifacts
+data/
+*.db
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.log
+*.out.log
+*.err.log
+
+# Local secrets and personal workspace files
+.env
+.env.*
+!.env.example
+.claude/
+.analysis/
+*.local
+
+# Local binaries and tunnel helpers
+bin/
+*.exe
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local Netlify folder
+.netlify/

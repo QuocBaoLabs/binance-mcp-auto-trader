@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Binance MCP Auto Trader logo</title>
+  <desc id="desc">A gold trading signal mark with a shield, chart line, and MCP nodes.</desc>
+  <defs>
+    <linearGradient id="gold" x1="88" y1="72" x2="432" y2="452" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE08A"/>
+      <stop offset=".48" stop-color="#F3BA2F"/>
+      <stop offset="1" stop-color="#B67C09"/>
+    </linearGradient>
+    <linearGradient id="ink" x1="96" y1="64" x2="426" y2="450" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#132238"/>
+      <stop offset="1" stop-color="#07111F"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#06111F" flood-opacity=".35"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#ink)"/>
+  <path d="M256 54 411 144v128c0 95-62 151-155 187-93-36-155-92-155-187V144L256 54Z" fill="#0B1728" stroke="url(#gold)" stroke-width="18" filter="url(#softShadow)"/>
+  <path d="M165 278 218 225l47 47 78-92" fill="none" stroke="url(#gold)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="165" cy="278" r="19" fill="#FFE08A"/>
+  <circle cx="218" cy="225" r="19" fill="#F3BA2F"/>
+  <circle cx="265" cy="272" r="19" fill="#F3BA2F"/>
+  <circle cx="343" cy="180" r="19" fill="#FFE08A"/>
+  <path d="M166 352h180" stroke="#DDE7F5" stroke-width="20" stroke-linecap="round" opacity=".92"/>
+  <path d="M196 390h120" stroke="#8FA4BF" stroke-width="16" stroke-linecap="round" opacity=".76"/>
+  <path d="M256 96v48M256 416v-48M96 256h48M416 256h-48" stroke="#F3BA2F" stroke-width="14" stroke-linecap="round" opacity=".65"/>
+</svg>

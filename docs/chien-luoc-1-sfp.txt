@@ -1,0 +1,547 @@
+CHIEN LUOC 1 - SFP (SWING FAILURE PATTERN)
+==========================================
+
+File nay dien giai logic chien luoc "1. SFP" trong bot trade.
+Muc tieu la de ban doc duoc bot dang tim gi, vao lenh khi nao, SL/TP tinh ra sao,
+va vi sao co luc co tin hieu nhung bot khong vao lenh.
+
+
+1. SFP LA GI?
+-------------
+
+SFP la viet tat cua Swing Failure Pattern.
+
+Y tuong:
+- Gia pha qua mot dinh/day swing gan nhat de quet thanh khoan.
+- Sau do gia dong nen quay nguoc lai vao trong vung cu.
+- Neu quet dinh roi dong lai ben duoi dinh: day la Bearish SFP, uu tien SHORT.
+- Neu quet day roi dong lai ben tren day: day la Bullish SFP, uu tien LONG.
+
+Noi gon:
+- Bearish SFP = gia chich len tren swing high, nhung dong nen lai duoi swing high.
+- Bullish SFP = gia chich xuong duoi swing low, nhung dong nen lai tren swing low.
+
+Bot chi dung nen da dong de phan tich. Nen dang chay/live candle se bi loai ra.
+
+
+2. THAM SO QUAN TRONG
+---------------------
+
+2.1. Pivot lookback / sfpLen
+
+Trong UI, tham so nay la "Pivot lookback".
+Mac dinh thuong la 5.
+
+Bot dung sfpLen de tim swing high va swing low gan nhat.
+
+Vi du sfpLen = 5:
+- Swing high hop le khi high cua nen pivot cao hon cac high ben trai theo do dai lookback,
+  va nen sau pivot khong tao high cao hon no.
+- Swing low hop le khi low cua nen pivot thap hon cac low ben trai theo do dai lookback,
+  va nen sau pivot khong tao low thap hon no.
+
+Tang sfpLen:
+- Swing chat hon, it tin hieu hon.
+- Tin hieu co the "sach" hon nhung cho lau hon.
+
+Giam sfpLen:
+- De co tin hieu hon.
+- Nhieu tin hieu nho va nhieu nhieu hon.
+
+
+3. CACH BOT PHAT HIEN SFP
+-------------------------
+
+Bot lay danh sach nen cua symbol/timeframe dang quet.
+Sau do loai nen dang hinh thanh, chi giu nen da dong.
+
+3.1. Tim swing high gan nhat
+
+Bot quet tu gan hien tai ve qua khu de tim pivot high.
+Neu tim duoc swing high, bot lay gia high do lam swingPrice.
+
+3.2. Tim swing low gan nhat
+
+Bot quet tu gan hien tai ve qua khu de tim pivot low.
+Neu tim duoc swing low, bot lay gia low do lam swingPrice.
+
+3.3. Bearish SFP
+
+Dieu kien:
+- Da co swing high.
+- Nen SFP co high > swing high.
+- Nen SFP dong cua close < swing high.
+
+Y nghia:
+- Gia quet len tren dinh cu de lay thanh khoan buy-side.
+- Nhung cuoi nen bi day nguoc xuong.
+- Bot hieu la that bai khi pha dinh, co kha nang dao chieu giam.
+
+Ket qua:
+- Huong tin hieu: BEARISH.
+- Lenh neu vao: SHORT.
+- swingPrice = gia swing high bi quet.
+- oppositeLevel = day thap nhat tu sau swing high den truoc nen SFP.
+
+3.4. Bullish SFP
+
+Dieu kien:
+- Da co swing low.
+- Nen SFP co low < swing low.
+- Nen SFP dong cua close > swing low.
+
+Y nghia:
+- Gia quet xuong duoi day cu de lay thanh khoan sell-side.
+- Nhung cuoi nen bi keo nguoc len.
+- Bot hieu la that bai khi pha day, co kha nang dao chieu tang.
+
+Ket qua:
+- Huong tin hieu: BULLISH.
+- Lenh neu vao: LONG.
+- swingPrice = gia swing low bi quet.
+- oppositeLevel = dinh cao nhat tu sau swing low den truoc nen SFP.
+
+3.5. Tin hieu "confirmed"
+
+Bot co truong confirmed.
+
+Voi Bearish SFP:
+- confirmed = true neu gia dong cua da pha xuong duoi oppositeLevel.
+
+Voi Bullish SFP:
+- confirmed = true neu gia dong cua da pha len tren oppositeLevel.
+
+Confirmed khong co nghia la chac chan thang.
+No chi noi rang gia da di tiep qua muc xac nhan sau khi quet thanh khoan.
+
+
+4. ENTRY DUOC TINH NHU THE NAO?
+-------------------------------
+
+Voi chien luoc SFP, bot uu tien lay entry bang gia thi truong moi nhat tu Binance ticker.
+
+Neu khong lay duoc ticker:
+- Bot fallback ve close cua nen da dong gan nhat.
+
+Vi vay entry tren chart/bang co the khac mot chut so voi gia nen SFP.
+Neu ban bat "Vao lenh Market", lenh vao se theo gia thi truong thuc te, nen gia khop that tren Binance co the lech nhe so voi entry record.
+
+
+5. STOP LOSS DUOC TINH NHU THE NAO?
+-----------------------------------
+
+SL cua SFP rat truc tiep: dat tai cuc tri cua nen SFP.
+
+Voi LONG / Bullish SFP:
+- SL = low cua nen SFP.
+- Ly do: neu gia quay lai pha low nay, setup quet day that bai.
+
+Voi SHORT / Bearish SFP:
+- SL = high cua nen SFP.
+- Ly do: neu gia quay lai pha high nay, setup quet dinh that bai.
+
+Vi du LONG:
+- Entry = 1.0000.
+- Nen SFP co low = 0.9900.
+- SL = 0.9900.
+
+Vi du SHORT:
+- Entry = 1.0000.
+- Nen SFP co high = 1.0100.
+- SL = 1.0100.
+
+
+6. TAKE PROFIT DUOC TINH NHU THE NAO?
+-------------------------------------
+
+Bot co 2 che do tinh TP cho SFP.
+
+6.1. TP theo RR mac dinh
+
+Neu "TP SFP (%)" = 0, bot dung RR mac dinh.
+Trong code hien tai, SFP_DEFAULT_TARGET_RR duoc dung de tinh khoang TP.
+
+Cong thuc:
+- riskDistance = abs(entry - SL)
+- tpDistance = riskDistance * SFP_DEFAULT_TARGET_RR
+
+Voi LONG:
+- TP = entry + tpDistance
+
+Voi SHORT:
+- TP = entry - tpDistance
+
+6.2. TP theo phan tram co dinh
+
+Neu "TP SFP (%)" > 0:
+- Bot khong dung RR mac dinh.
+- Bot dung phan tram TP rieng.
+
+Cong thuc:
+- tpDistance = entry * (TP_percent / 100)
+
+Voi LONG:
+- TP = entry + tpDistance
+
+Voi SHORT:
+- TP = entry - tpDistance
+
+Vi du:
+- Entry = 1.0000.
+- TP SFP (%) = 0.5.
+- tpDistance = 1.0000 * 0.5 / 100 = 0.005.
+- LONG TP = 1.0050.
+- SHORT TP = 0.9950.
+
+
+7. CHAM DIEM SETUP SFP
+----------------------
+
+Sau khi phat hien SFP, bot khong vao lenh ngay.
+Bot tao mot "plan" va cham diem rule.
+
+Tong diem duoc quy ve 0-100.
+Tin hieu dat dieu kien khi:
+- score >= nguong toi thieu cua SFP.
+- Khong co fail nghiem trong.
+- So loi chat luong khong qua gioi han.
+
+Cac nhom rule chinh gom:
+
+7.1. Hinh dang setup / risk-shape
+
+Bot kiem tra quan he Entry - SL - TP co hop ly khong.
+
+LONG:
+- SL phai nam duoi entry.
+- TP phai nam tren entry.
+
+SHORT:
+- SL phai nam tren entry.
+- TP phai nam duoi entry.
+
+Neu sai huong, bot bo qua.
+
+7.2. Stop distance
+
+Bot xem SL co qua xa entry khong.
+
+Neu SL qua xa:
+- R/R xau.
+- Lo khi cham SL qua lon.
+- De bi risk manager chan.
+
+7.3. Stop theo timeframe
+
+Bot co gioi han do xa SL theo tung timeframe.
+Khung nho nhu 1m/3m can SL ngan hon.
+Khung lon co the chap nhan SL rong hon.
+
+7.4. ATR cap
+
+Bot dung ATR de do bien dong.
+Neu SL lon qua nhieu so voi ATR, setup bi xem la qua rong/khong dep.
+
+7.5. Risk/Reward
+
+Bot tinh RR = khoang TP / khoang SL.
+Neu RR qua thap, bot co the bo qua.
+
+7.6. Liquidation buffer
+
+Bot uoc tinh rui ro thanh ly theo leverage.
+Neu SL nam qua gan vung nguy hiem, bot bo qua.
+
+7.7. Entry chase
+
+Neu gia hien tai da chay qua xa so voi setup, bot xem la duoi lenh.
+Duoi lenh lam SL/TP xau di, nen co the bo qua.
+
+7.8. Mau nen xac nhan
+
+Neu chien luoc "Mau nen" cung bat, SFP co the duoc cham them diem hoi tu.
+
+Neu mau nen cung huong SFP:
+- Bot ghi "Hoi tu".
+- Diem setup tot hon.
+
+Neu mau nen nguoc huong SFP:
+- Bot ghi "Xung dot".
+- Setup yeu hon, co the bi bo qua.
+
+Neu khong co mau nen:
+- Khong fail nang.
+- Chi thieu diem bonus.
+
+
+8. QUYET DINH TRADE HAY SKIP
+----------------------------
+
+Bot co 2 ket qua:
+
+8.1. TRADE
+
+Nghia la setup du dieu kien theo rule.
+
+Neu auto execute dang tat:
+- Signal vao danh sach cho xac nhan.
+- Ban co the bam "Vao lenh" thu cong.
+
+Neu auto execute dang bat:
+- Signal duoc dua vao queue.
+- Bot doi so nen theo "sfpWaitCandles".
+- Den gio thi moi thu vao lenh neu van con slot va risk ok.
+
+8.2. SKIP
+
+Nghia la setup co SFP nhung khong du dieu kien vao lenh.
+
+Neu auto execute dang bat:
+- Bot chuyen signal sang rejected.
+- Chart se ghi ly do khong vao lenh.
+
+Neu auto execute dang tat:
+- Mot so signal van co the hien de ban xem/tu quyet dinh, tuy theo flow UI.
+
+
+9. sfpWaitCandles - DOI THEM NEN TRUOC KHI VAO
+----------------------------------------------
+
+Neu auto execute bat va setup TRADE:
+- Bot khong nhat thiet vao ngay.
+- Bot tinh executeAfter = hien tai + sfpWaitCandles * do dai timeframe.
+
+Vi du:
+- Timeframe = 1m.
+- sfpWaitCandles = 3.
+- Signal dat luc 10:00.
+- Bot se doi den khoang 10:03 roi moi xet vao lenh.
+
+Neu sfpWaitCandles = 0:
+- Bot co the dua vao queue gan nhu ngay lap tuc.
+
+Muc dich cua wait:
+- Giam vao qua som sau nen quet thanh khoan.
+- Cho thi truong xac nhan them.
+- Nhung doi lau qua thi co the miss lenh.
+
+
+10. LOC TRUNG SETUP
+-------------------
+
+Bot co co che khong lap lai setup qua gan.
+
+No so sanh:
+- Symbol.
+- Direction.
+- Swing price.
+- Time window theo timeframe.
+
+Neu setup qua giong signal gan day:
+- Bot bo qua, khong tao signal moi.
+
+Muc dich:
+- Khong spam nhieu lenh cung mot setup.
+- Khong vao lai lien tuc sau khi vua bi reject/ignored.
+
+
+11. KHI NAO BOT GUI LENH THAT?
+------------------------------
+
+Bot chi gui lenh that khi tat ca dieu kien sau dung:
+
+1. SFP duoc bat trong danh sach chien luoc.
+2. Scanner dang bat.
+3. Auto trade / auto execute dang bat neu muon bot tu vao.
+4. Khong o READ_ONLY.
+5. DRY_RUN=false neu muon lenh that.
+6. API Binance hop le.
+7. Symbol/timeframe con nam trong danh sach quet.
+8. Setup co decision = TRADE.
+9. Den thoi gian executeAfter neu co wait candles.
+10. Con slot lenh theo maxOpenPositions.
+11. Khong trung symbol/khong trung setup dang co exposure.
+12. Risk manager khong chan.
+
+
+12. KHI GUI LENH, BOT DAT NHUNG LENH NAO?
+-----------------------------------------
+
+Voi SFP thuong:
+- Entry: MARKET neu "Vao lenh Market" bat, nguoc lai LIMIT.
+- SL: STOP_MARKET closePosition=true.
+- TP: TAKE_PROFIT_MARKET hoac protected TP theo flow order.
+
+Neu co trailing stop duoc cau hinh rieng:
+- Bot co the dung trailing stop thay/di kem logic TP theo cau hinh.
+
+Tat ca lenh bao ve phai la reduceOnly/closePosition de khong mo them vi the nguoc chieu.
+
+
+13. RISK MANAGER CHAN LENH VI NHUNG LY DO NAO?
+----------------------------------------------
+
+Day la cac ly do rat hay gap:
+
+13.1. Khong du so du
+
+Vi du:
+- Khong du margin.
+- Khong du buffer phi.
+- Binance bao "Margin is insufficient".
+
+13.2. Notional nho hon 5 USDT
+
+Binance Futures yeu cau notional toi thieu.
+Neu margin * leverage qua nho, bot se bi chan.
+
+13.3. SL qua xa
+
+Bot tinh:
+- slMovePct = abs(entry - SL) / entry * 100
+- slLossOfMarginPct = slMovePct * leverage
+
+Gioi han hien tai:
+- Cross: toi da 25% ky quy lenh.
+- Isolated: toi da 35% ky quy lenh.
+
+Vi du:
+- SL cach entry 1%.
+- Leverage 20x.
+- Neu cham SL, mat khoang 20% ky quy lenh.
+
+Neu vuot gioi han, bot chan.
+
+13.4. RR qua thap
+
+Neu TP gan hon SL, RR thap, bot co the chan.
+
+13.5. SL/TP sai phia
+
+LONG:
+- SL phai duoi entry.
+- TP phai tren entry.
+
+SHORT:
+- SL phai tren entry.
+- TP phai duoi entry.
+
+13.6. Da du slot lenh
+
+Neu so vi the/lenh cho da cham maxOpenPositions, bot khong mo them.
+
+13.7. Coin khong nam trong danh sach duoc phep
+
+Neu symbol khong co trong allowed/watch list, bot bo qua.
+
+
+14. DOC CHART SFP
+-----------------
+
+Tren chart SFP:
+- ENTRY: gia bot du kien vao hoac gia record.
+- SL: cuc tri cua nen SFP.
+- TP: target tinh theo RR hoac %.
+- Vung highlight: nen SFP/nen lien quan.
+- Swing level: muc high/low bi quet.
+- Neu chart ghi "KHONG VAO LENH": bot da tao setup nhung risk/rule chan.
+
+Neu bam Live chart:
+- Dashboard goi Binance lay nen moi nhat.
+- Bot tao lai SVG tu du lieu live moi.
+- Entry/SL/TP van la muc cua signal da luu, khong tu doi theo chart moi.
+
+
+15. CAC TINH HUONG THUONG GAP
+-----------------------------
+
+15.1. Co tin hieu SFP nhung khong co lenh
+
+Nguyen nhan co the:
+- Score duoi nguong.
+- SL qua xa.
+- RR xau.
+- Het slot.
+- Khong du so du.
+- Trung setup gan day.
+- Auto execute tat.
+- Dang doi sfpWaitCandles.
+
+15.2. Entry tren chart khac gia khop Binance
+
+Binh thuong.
+Neu vao MARKET, gia khop theo thi truong that.
+Record entry la gia bot tinh luc tao/execute signal.
+
+15.3. SHORT ma lenh bao ve la BUY
+
+Dung.
+Vi SHORT muon dong vi the thi phai BUY.
+
+15.4. LONG ma lenh bao ve la SELL
+
+Dung.
+Vi LONG muon dong vi the thi phai SELL.
+
+15.5. Thay lệnh Stop Market / Mua voi SHORT
+
+Day la SL/TP dong short.
+Khong phai bot vao LONG moi, neu closePosition=true hoac reduceOnly=true.
+
+
+16. KHUYEN NGHI CAU HINH SFP
+----------------------------
+
+Neu ban muon it lenh nhung chat hon:
+- Tang Pivot lookback.
+- Tang sfpWaitCandles.
+- De TP theo RR, khong dat TP % qua gan.
+- Giu leverage vua phai.
+- Dung isolated neu so du nho va muon tach rui ro.
+
+Neu ban muon nhieu lenh hon:
+- Giam Pivot lookback.
+- Giam sfpWaitCandles.
+- Dung timeframe 1m/3m.
+- Nhung phai chap nhan nhieu setup bi reject/nhieu nhieu hon.
+
+Neu so du nho:
+- Khong nen leverage qua cao.
+- Nen de margin moi lenh nho hon tong kha dung chia cho so slot.
+- Theo doi notional toi thieu 5 USDT.
+
+
+17. TOM TAT NGAN GON
+--------------------
+
+SFP vao lenh theo logic:
+
+1. Tim swing high/low gan nhat.
+2. Cho gia quet qua swing.
+3. Neu nen dong cua quay lai trong swing -> co SFP.
+4. Huong:
+   - Quet high roi dong duoi high -> SHORT.
+   - Quet low roi dong tren low -> LONG.
+5. Entry = gia ticker Binance moi nhat, fallback close nen.
+6. SL = high/low cua nen SFP.
+7. TP = theo RR mac dinh hoac theo TP SFP (%).
+8. Cham diem rule.
+9. Neu score dat va risk ok -> TRADE.
+10. Neu auto bat -> doi sfpWaitCandles roi vao neu con slot/risk ok.
+11. Neu khong dat -> SKIP/REJECT va chart ghi ly do.
+
+
+18. DIEU CAN NHO
+----------------
+
+SFP la chien luoc bat that bai pha dinh/day.
+No manh khi gap dung vung thanh khoan ro, volume/nen dao chieu tot, va SL ngan.
+
+SFP yeu khi:
+- Gia da chay xa moi vao.
+- SL qua rong.
+- TP gan hon SL.
+- Dang trend manh va SFP chi la mot pullback nho.
+
+Bot khong chi thay SFP la vao.
+Bot phai di qua score, risk manager, slot, so du, va che do auto.
