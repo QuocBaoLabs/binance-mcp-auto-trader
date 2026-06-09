@@ -8,6 +8,12 @@ Binance MCP Auto Trader is a local-first TypeScript trading workstation for Bina
 
 > This project is educational software, not financial advice. Trading crypto futures is high risk. Start with testnet and dry-run mode, and never use API keys with withdrawal permissions.
 
+## Demo
+
+<video src="assets/demo.mp4" controls width="100%" title="Binance MCP Auto Trader dashboard demo"></video>
+
+[Watch the dashboard demo video](assets/demo.mp4)
+
 ## What It Does
 
 - Runs a local backend that talks to Binance USD-M Futures through the official REST and WebSocket APIs.
@@ -47,13 +53,13 @@ The dashboard never receives raw Binance secrets from the backend. API keys are 
 
 ```text
 .
-├── assets/                 # Repository artwork
-├── dashboard/              # React dashboard
-├── docs/                   # Strategy notes
-├── server/                 # Backend, MCP server, risk, strategy, Binance clients
-├── package.json            # Scripts and dependencies
-├── .env.example            # Safe environment template
-└── README.md
+|-- assets/                 # Repository artwork and demo media
+|-- dashboard/              # React dashboard
+|-- docs/                   # Strategy notes
+|-- server/                 # Backend, MCP server, risk, strategy, Binance clients
+|-- package.json            # Scripts and dependencies
+|-- .env.example            # Safe environment template
+`-- README.md
 ```
 
 Ignored runtime folders include `node_modules/`, `dist/`, `data/`, `bin/`, logs, local assistant files, and `.env`.
